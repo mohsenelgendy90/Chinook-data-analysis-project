@@ -1,0 +1,70 @@
+
+1-) Who is our best customer for each country?
+
+WITH t1 AS
+  (SELECT c.CustomerId,
+     c.FirstName || " " || c.LastName AS Customer_name,
+     c.Country, sum(i.Total) Total_spent
+   FROM Customer c
+   JOIN Invoice i
+   ON c.CustomerId = i.CustomerId
+   GROUP BY 1, 2, 3),
+     t2 AS 
+  (SELECT 
+     Country, max(Total_spent) max_spent
+     FROM t1
+     GROUP BY 1)
+SELECT t1.Customer_name, t1.Country, t1.Total_spent
+FROM t1
+JOIN t2
+  ON t1.Country = t2.Country
+WHERE t1.Total_spent = t2.max_spent
+ORDER BY 3 DESC;
+
+----------------------------------------------
+----------------------------------------------
+
+2-) Who are our top-selling artists?
+
+SELECT
+  ar.Name AS Artist_name,
+  SUM(il.UnitPrice * il.Quantity) total_revenue
+FROM Artist ar
+JOIN Album al
+  ON ar.ArtistId = al.ArtistId
+JOIN Track t
+  ON t.AlbumId = al.AlbumId
+JOIN InvoiceLine il
+  ON il.TrackId = t.TrackId
+GROUP BY ar.ArtistId,
+         1
+ORDER BY 2 DESC
+LIMIT 10;
+----------------------------------------------
+----------------------------------------------
+
+3-) What are our popular genre based on number of  orders?
+
+SELECT
+  g.Name,
+  SUM(Quantity) Total_orders
+FROM Genre g
+JOIN Track t
+  ON t.GenreId = g.GenreId
+JOIN InvoiceLine il
+  ON il.TrackId = t.TrackId
+GROUP BY 1
+ORDER BY 2 DESC;
+----------------------------------------------
+----------------------------------------------
+
+4-) What support rep has the most customers?
+
+SELECT 
+  e.FirstName || " " || e.LastName AS Employee_name,
+  count(*) AS Customers_served
+FROM Customer c
+JOIN Employee e
+  ON e.EmployeeId = c.SupportRepId
+GROUP BY 1, e.EmployeeId
+ORDER BY 2 DESC;
